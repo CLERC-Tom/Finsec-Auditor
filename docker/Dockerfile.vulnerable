@@ -1,0 +1,33 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    openssh-server \
+    python3 \
+    python3-pip \
+    sudo \
+    iptables \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install click rich jinja2 boto3
+
+RUN mkdir /var/run/sshd
+
+RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \
+    echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config && \
+    echo "MaxAuthTries 10" >> /etc/ssh/sshd_config && \
+    echo "Port 22" >> /etc/ssh/sshd_config
+
+RUN echo 'root:password123' | chpasswd
+
+RUN useradd -m -s /bin/bash vulnuser && \
+    passwd -d vulnuser
+
+RUN chmod 644 /etc/shadow && \
+    chmod 666 /etc/passwd
+
+RUN systemctl disable ufw 2>/dev/null || true
+
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd", "-D"]

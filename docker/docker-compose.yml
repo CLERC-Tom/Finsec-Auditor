@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  vulnerable-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.vulnerable
+    container_name: finsec-audit-target
+    hostname: vulnerable-server
+    privileged: true
+    ports:
+      - "2222:22"
+    networks:
+      - audit-net
+
+networks:
+  audit-net:
+    driver: bridge
